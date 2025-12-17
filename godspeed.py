@@ -206,10 +206,12 @@ if __name__ == "__main__":
             
             st.success("データをGoogle Spread Sheetに保存しました！")
             
+        except KeyError as e:
+            st.error(f"設定エラー: secrets.tomlに必要な情報が設定されていません ({e})")
         except Exception as e:
             st.error(f"Google Spread Sheetへの保存に失敗しました: {e}")
 
-        # グラフの生成と保存
+        # グラフの生成と表示
         fig = go.Figure()
         fig.add_trace(
             go.Scatterpolar(
@@ -231,5 +233,7 @@ if __name__ == "__main__":
                 ),
                 showlegend=True
             )
-        fig.show()
-        fig.write_image(f"{file_name}.png", scale=2)
+        
+        # Streamlitでグラフを表示
+        st.plotly_chart(fig)
+
