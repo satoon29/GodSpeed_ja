@@ -69,14 +69,16 @@ if __name__ == "__main__":
     date = datetime.datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')
     file_name = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
 
-    st.title("GodSpeedアンケート")
+    st.title("ロボットの印象評価アンケート")
     st.markdown(f"```実施日: {date}```")
-    st.markdown("以下のスケールに基づいてこの対話システムの印象を評価して下さい。")
+    st.markdown("以下のスケールに基づいて、このロボットに対するあなたの印象を評価してください。\
+                左側の言葉があなたの印象に近い場合は1に、右側の言葉があなたの印象に近い場合は5に、その中間である場合は2、3、4に印を付けてください。")
 
     log = list()
     log.append("カテゴリ,質問,評価値")
 
-    st.subheader('擬人観', divider='gray')
+    # 擬人観
+    st.divider()
     insert_scale(st.columns(3))
     g1, q1 = set_question(st.columns(3), "偽物のような", "自然な")
     g2, q2 = set_question(st.columns(3), "機械的", "人間的")
@@ -92,8 +94,8 @@ if __name__ == "__main__":
     log.append(f"擬人観,{q4},{g4}")
     log.append(f"擬人観,{q5},{g5}")
 
-
-    st.subheader('有生性', divider='gray')
+    # 有生性
+    st.divider()
     insert_scale(st.columns(3))
     y1, q1 = set_question(st.columns(3), "死んでいる", "生きている")
     y2, q2  = set_question(st.columns(3), "活気のない", "生き生きとした")
@@ -110,8 +112,8 @@ if __name__ == "__main__":
     log.append(f"有生性,{q4},{y4}")
     log.append(f"有生性,{q5},{y5}")
 
-
-    st.subheader('好感度', divider='gray')
+    # 好感度
+    st.divider()
     insert_scale(st.columns(3))
     k1, q1 = set_question(st.columns(3), "嫌い", "好き")
     k2, q2 = set_question(st.columns(3), "親しみにくい", "親しみやすい")
@@ -127,8 +129,8 @@ if __name__ == "__main__":
     log.append(f"好感度,{q4},{k4}")
     log.append(f"好感度,{q5},{k5}")
 
-
-    st.subheader('知性の有無', divider='gray')
+    # 知性の有無
+    st.divider()
     insert_scale(st.columns(3))
     t1, q1 = set_question(st.columns(3), "無能な", "有能な")
     t2, q2  = set_question(st.columns(3), "無知な", "物知りな")
@@ -144,8 +146,8 @@ if __name__ == "__main__":
     log.append(f"知性の有無,{q4},{t4}")
     log.append(f"知性の有無,{q5},{t5}")
 
-
-    st.subheader('安心感の有無', divider='gray')
+    # 安心感の有無
+    st.divider()
     insert_scale(st.columns(3))
     a1, q1 = set_question(st.columns(3), "不安な", "落ち着いた")
     a2, q2 = set_question(st.columns(3), "冷静な", "動揺している")
