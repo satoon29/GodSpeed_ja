@@ -7,6 +7,8 @@ import datetime
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
+import gspread
+from google.oauth2.service_account import Credentials
 
 
 KEY = 0
@@ -75,7 +77,7 @@ if __name__ == "__main__":
                 左側の言葉があなたの印象に近い場合は1に、右側の言葉があなたの印象に近い場合は5に、その中間である場合は2、3、4に印を付けてください。")
 
     log = list()
-    log.append("カテゴリ,質問,評価値")
+    log.append(["カテゴリ", "質問", "評価値"])
 
     # 擬人観
     st.divider()
@@ -88,11 +90,11 @@ if __name__ == "__main__":
     g = [g1, g2, g3, g4, g5]
     ave_g = sum(g) / len(g)
 
-    log.append(f"擬人観,{q1},{g1}")
-    log.append(f"擬人観,{q2},{g2}")
-    log.append(f"擬人観,{q3},{g3}")
-    log.append(f"擬人観,{q4},{g4}")
-    log.append(f"擬人観,{q5},{g5}")
+    log.append(["擬人観", q1, g1])
+    log.append(["擬人観", q2, g2])
+    log.append(["擬人観", q3, g3])
+    log.append(["擬人観", q4, g4])
+    log.append(["擬人観", q5, g5])
 
     # 有生性
     st.divider()
@@ -106,11 +108,12 @@ if __name__ == "__main__":
     y = [y1, y2, y3, y4, y5, y6]
     ave_y = sum(y) / len(y)
 
-    log.append(f"有生性,{q1},{y1}")
-    log.append(f"有生性,{q2},{y2}")
-    log.append(f"有生性,{q3},{y3}")
-    log.append(f"有生性,{q4},{y4}")
-    log.append(f"有生性,{q5},{y5}")
+    log.append(["有生性", q1, y1])
+    log.append(["有生性", q2, y2])
+    log.append(["有生性", q3, y3])
+    log.append(["有生性", q4, y4])
+    log.append(["有生性", q5, y5])
+    log.append(["有生性", q6, y6])
 
     # 好感度
     st.divider()
@@ -123,11 +126,11 @@ if __name__ == "__main__":
     k = [k1, k2, k3, k4, k5]
     ave_k = sum(k) / len(k)
 
-    log.append(f"好感度,{q1},{k1}")
-    log.append(f"好感度,{q2},{k2}")
-    log.append(f"好感度,{q3},{k3}")
-    log.append(f"好感度,{q4},{k4}")
-    log.append(f"好感度,{q5},{k5}")
+    log.append(["好感度", q1, k1])
+    log.append(["好感度", q2, k2])
+    log.append(["好感度", q3, k3])
+    log.append(["好感度", q4, k4])
+    log.append(["好感度", q5, k5])
 
     # 知性の有無
     st.divider()
@@ -140,11 +143,11 @@ if __name__ == "__main__":
     t = [t1, t2, t3, t4, t5]
     ave_t = sum(t) / len(t)
 
-    log.append(f"知性の有無,{q1},{t1}")
-    log.append(f"知性の有無,{q2},{t2}")
-    log.append(f"知性の有無,{q3},{t3}")
-    log.append(f"知性の有無,{q4},{t4}")
-    log.append(f"知性の有無,{q5},{t5}")
+    log.append(["知性の有無", q1, t1])
+    log.append(["知性の有無", q2, t2])
+    log.append(["知性の有無", q3, t3])
+    log.append(["知性の有無", q4, t4])
+    log.append(["知性の有無", q5, t5])
 
     # 安心感の有無
     st.divider()
@@ -155,9 +158,9 @@ if __name__ == "__main__":
     a = [a1, a2, a3]
     ave_a = sum(a) / len(a)
 
-    log.append(f"安心感の有無,{q1},{a1}")
-    log.append(f"安心感の有無,{q2},{a2}")
-    log.append(f"安心感の有無,{q3},{a3}")
+    log.append(["安心感の有無", q1, a1])
+    log.append(["安心感の有無", q2, a2])
+    log.append(["安心感の有無", q3, a3])
 
 
     df = pd.DataFrame(
@@ -174,9 +177,39 @@ if __name__ == "__main__":
 
     if st.button("完了"):
 
+        # ローカルCSVファイルに保存
         with open(f"{file_name}.csv", mode="w", encoding="utf-8") as o:
-            o.write("\n".join(log))
+            o.write("カテゴリ,質問,評価値\n")
+            for row in log[1:]:
+                o.write(f"{row[0]},{row[1]},{row[2]}\n")
 
+        # Google Spread Sheetに保存
+        try:
+            # 認証情報の設定（Streamlit Secretsから取得）
+            credentials = Credentials.from_service_account_info(
+                st.secrets["gcp_service_account"],
+                scopes=[
+                    "https://www.googleapis.com/auth/spreadsheets",
+                    "https://www.googleapis.com/auth/drive"
+                ]
+            )
+            
+            client = gspread.authorize(credentials)
+            
+            # スプレッドシートを開く（URLまたはキーで指定）
+            spreadsheet = client.open_by_key(st.secrets["spreadsheet_key"])
+            worksheet = spreadsheet.sheet1
+            
+            # タイムスタンプを追加して書き込み
+            for row in log[1:]:
+                worksheet.append_row([date] + row)
+            
+            st.success("データをGoogle Spread Sheetに保存しました！")
+            
+        except Exception as e:
+            st.error(f"Google Spread Sheetへの保存に失敗しました: {e}")
+
+        # グラフの生成と保存
         fig = go.Figure()
         fig.add_trace(
             go.Scatterpolar(
