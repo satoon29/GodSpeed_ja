@@ -73,6 +73,10 @@ if __name__ == "__main__":
 
     st.title("ロボットの印象評価アンケート")
     st.markdown(f"```実施日: {date}```")
+    
+    # 名前入力欄を追加
+    name = st.text_input("お名前を入力してください", placeholder="山田太郎")
+    
     st.markdown("以下のスケールに基づいて、このロボットに対するあなたの印象を評価してください。\
                 左側の言葉があなたの印象に近い場合は1に、右側の言葉があなたの印象に近い場合は5に、その中間である場合は2、3、4に印を付けてください。")
 
@@ -176,6 +180,11 @@ if __name__ == "__main__":
     )
 
     if st.button("完了"):
+        
+        # 名前の入力チェック
+        if not name:
+            st.error("お名前を入力してください")
+            st.stop()
 
         # ローカルCSVファイルに保存
         with open(f"{file_name}.csv", mode="w", encoding="utf-8") as o:
@@ -200,9 +209,31 @@ if __name__ == "__main__":
             spreadsheet = client.open_by_key(st.secrets["spreadsheet_key"])
             worksheet = spreadsheet.sheet1
             
-            # タイムスタンプを追加して書き込み
-            for row in log[1:]:
-                worksheet.append_row([date] + row)
+            # 1行のデータとして整形
+            row_data = [
+                date,
+                name,
+                ave_g, g1, g2, g3, g4, g5,
+                ave_y, y1, y2, y3, y4, y5, y6,
+                ave_k, k1, k2, k3, k4, k5,
+                ave_t, t1, t2, t3, t4, t5,
+                ave_a, a1, a2, a3
+            ]
+            
+            # ヘッダー行がない場合は追加
+            if worksheet.row_count == 0 or worksheet.cell(1, 1).value is None:
+                header = [
+                    "日時", "名前",
+                    "擬人観_平均", "擬人観_Q1", "擬人観_Q2", "擬人観_Q3", "擬人観_Q4", "擬人観_Q5",
+                    "有生性_平均", "有生性_Q1", "有生性_Q2", "有生性_Q3", "有生性_Q4", "有生性_Q5", "有生性_Q6",
+                    "好感度_平均", "好感度_Q1", "好感度_Q2", "好感度_Q3", "好感度_Q4", "好感度_Q5",
+                    "知性_平均", "知性_Q1", "知性_Q2", "知性_Q3", "知性_Q4", "知性_Q5",
+                    "安心感_平均", "安心感_Q1", "安心感_Q2", "安心感_Q3"
+                ]
+                worksheet.append_row(header)
+            
+            # データを1行として追加
+            worksheet.append_row(row_data)
             
             st.success("データをGoogle Spread Sheetに保存しました！")
             
